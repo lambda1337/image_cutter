@@ -15,12 +15,12 @@ while os.path.exists(SAVE_FOLDER):
     option = input("\n - Wanna u rewrite it? (y/n): ")
     if option.lower() == "y":
         shutil.rmtree(SAVE_FOLDER)
-        os.mkdir(SAVE_FOLDER)
         break
     else:
         print("\n - SELECT ANOTHER SAVE PATH FOLDER: ")
         SAVE_FOLDER = input("\n - Path to save images: ")
 
+os.mkdir(SAVE_FOLDER)
 print("\n\t Path correctly selected...\n")
         
 
@@ -53,7 +53,7 @@ def resize(image):
         return image.resize((1024,1024))
 
 def non_edited(image):
-        return image[-1] != '1' and image[-1] != '2' or image[-1] != '3' or image[-1] != '4'
+        return image[-1] != '1' and image[-1] != '2' and image[-1] != '3' and image[-1] != '4'
 ########################################
 
 # ver todos los archivos en el directorio pasado
@@ -66,20 +66,25 @@ images_non_edited = list(filter(non_edited,images_in_folder))
 # images_in_folder esun listado de las imagenes nomas
 
 def start_cutting(images_in_folder):
+
     if (len(images_in_folder) == 0):
         print("THERE ISN'T IMAGES TO EDIT!!!")
         return 0
-    print("\n - Processing images and cutting it...- \n")
+
+    print("\n - Processing images and cropping it...- \n")
+
     for each_image in images_in_folder:
         cuttes = cut_image(each_image,IMAGES_FOLDER)
         index = 0
         for each_cut_of_the_image in cuttes:
             index += 1
-            each_cut_of_the_image.save(SAVE_FOLDER+"/"+return_only_name(each_image)+str(index)+".bmp", quality=100)
+            print("CONVERTING: "+SAVE_FOLDER+"/"+return_only_name(each_image)+str(index)+".bmp")
+            each_cut_of_the_image.save(SAVE_FOLDER+"/"+return_only_name(each_image)+str(index)+".bmp")
         
 if __name__ == "__main__":
     start_cutting(images_non_edited)
     images_saved = os.listdir(SAVE_FOLDER)
+    print(images_saved)
     images_order = [[], [], [], [], [], [], [],[]]
     first = 0
     for images in images_saved:
@@ -100,6 +105,12 @@ if __name__ == "__main__":
                     images_order[0].append(images)
                 else:
                     images_order[7].append(images)
+            else:
+                print(f"\n -[WARNING] '{images}' DOESN'T CONTAINS ANY PREFIX! -")
+
+    if len(images_order) == 0:
+        print("\n - IMAGES DOESN'T CONTAINS PREFIX => 'BK,FT,FT,DN...'")
+        exit()
 
     text = '{ '
     for image_ordered in images_order:
@@ -107,7 +118,7 @@ if __name__ == "__main__":
             text += '"'+ image_individual + '" '
     text += '}'
 
-    print(f"\n ---------------------- \n \t COMPLETED \nIMAGES SAVED ARE 24-32 BITS DEPTH | \t REMEMBER CONVERT TO 8 BITS DEPTH !!!\n \n - {text} \n -------------------------------- \n")
+    print(f"\n ---------------------- \n \t COMPLETED \nIMAGES SAVED ARE 24-32 BITS DEPTH | \t REMEMBER CONVERT TO 8 BITS DEPTH WITH OTHER SOFTWARE!!!\n \n - {text} \n -------------------------------- \n")
     option = input("\n Copy to clipboard (press Y for YES and exit/press N for NO and exit): ")
 
     if option.lower() == "y":
@@ -116,4 +127,15 @@ if __name__ == "__main__":
     else:
         pass
 
+    print("""\n Paste into Fake 2d Skybox Model .QC file (i.e: 2DSkyBox_1024.qc), following the Syntax:
+
+            $texturegroup skinfamilies
+            {
+                { "SkyBoxFt4.bmp" "SkyBoxLf1.bmp" [...] } //Skin 0 (default)
+                ------------paste here---------------  //Skin 1,2,...n (textures)
+            }
+
+            for more info about: https://developer.valvesoftware.com/wiki/$texturegroup""")
+
     exit()
+
